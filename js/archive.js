@@ -10,6 +10,11 @@ function isZip(bytes, offset = 0) {
   return [[80, 75, 3, 4], [80, 75, 5, 6], [80, 75, 7, 8]].some(signature => hasPrefix(bytes, signature, offset));
 }
 
+function mobileLike() {
+  return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '') ||
+    (window.matchMedia && window.matchMedia('(pointer: coarse)').matches && window.innerWidth < 1100);
+}
+
 export function extract(buffer) {
   const bytes = new Uint8Array(buffer);
   if (isZip(bytes)) return { bytes, container: 'ZIP', version: null, offset: 0 };
@@ -67,6 +72,13 @@ function packageName(mod, extension) {
 }
 
 function directDownload(mod) {
+  if (mobileLike()) {
+    // Android/iOS browsers are much more reliable when the package navigation
+    // happens synchronously inside the original tap instead of after fetch().
+    window.location.assign(mod.packageUrl);
+    return;
+  }
+
   const anchor = document.createElement('a');
   anchor.href = mod.packageUrl;
   // Best effort: some browsers/CDNs ignore download= for cross-origin URLs,
@@ -82,6 +94,14 @@ function directDownload(mod) {
 export async function download(mod, asZip = false) {
   if (!mod.packageUrl) throw Error('No resolved GX package URL is available yet');
 
+  // On phones/tablets, do not burn the transient tap activation on a CORS
+  // request before starting an ordinary CRX download. This path runs before
+  // the first await, so the browser treats it as a direct user-initiated load.
+  if (!asZip && mobileLike()) {
+    directDownload(mod);
+    return 'crx';
+  }
+
   let response;
   try {
     response = await fetch(mod.packageUrl, { mode: 'cors' });
@@ -93,7 +113,14 @@ export async function download(mod, asZip = false) {
     return 'crx';
   }
 
-  if (!response.ok) throw Error(`GX CDN returned HTTP ${response.status}`);
+  if (!response.ok) {
+    if (!asZip) {
+      directDownload(mod);
+      return 'crx';
+    }
+    throw Error(`GX CDN returned HTTP ${response.status}`);
+  }
+
   const buffer = await response.arrayBuffer();
 
   if (asZip) {
