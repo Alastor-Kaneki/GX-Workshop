@@ -8,7 +8,7 @@
 - **GX catalog browser** — local full-text search across mod name, author, description, tags and components; filters; sorting; random discovery; GX Store URL resolver.
 - **Scheduled catalog sync** — GitHub Actions crawls public **official GX Store pages** and writes `data/catalog.json`, avoiding browser-side CORS scraping for discovery.
 - **GX package resolver** — inherited from the earlier GX Mod Archive Downloader logic. It recognizes both `mods.store.gx.me` and legacy `play.gxc.gg` layouts and derives the sibling `mod.crx` from GX asset URLs.
-- **Downloads** — direct original CRX downloads and CRX2/CRX3 → raw ZIP payload extraction in-browser when the GX CDN permits CORS. If ZIP conversion is blocked, the UI falls back to the original CRX.
+- **Downloads** — CRX and ZIP downloads are saved through local blob URLs so the browser uses the actual GX mod title for the filename (for example `Akko Lavender Purple.crx` / `Akko Lavender Purple.zip`) instead of Opera's generic `mod.crx`. CRX2/CRX3 → raw ZIP payload extraction remains available in-browser when the GX CDN permits CORS.
 - **Local library** — favorites, saved/downloaded mods, download history and archive imports stored in IndexedDB.
 - **Workbench / Archive Explorer** — drag/drop `.crx` or `.zip`, SHA-256 fingerprinting, CRX2/CRX3 detection, ZIP payload extraction, central-directory file browsing, manifest viewing, per-file extraction and JSON reports. Normal ZIP32 archives are supported; ZIP64 is deliberately rejected for now.
 - **GX Theme Lab** — whole-interface theme families, accent/secondary/background controls, glow/radius mutation, theme randomization, image palette extraction and CSS-variable-driven coverage.
