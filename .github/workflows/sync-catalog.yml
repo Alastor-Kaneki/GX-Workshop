@@ -1,5 +1,5 @@
 name: Sync GX catalog
-# Pipeline v2.1: full Desktop + Mobile discovery, metadata repair, validation.
+# Pipeline v2.2: full Desktop + Mobile discovery, metadata repair, guarded validation.
 
 on:
   workflow_dispatch:
@@ -51,15 +51,29 @@ jobs:
         run: |
           node - <<'NODE'
           const fs = require('fs');
+          const cp = require('child_process');
           const data = JSON.parse(fs.readFileSync('data/catalog.json', 'utf8'));
           const mods = Array.isArray(data) ? data : data.mods || [];
-          if (mods.length < 1000) throw new Error(`Catalog suspiciously small: ${mods.length}`);
+
+          let previousCount = 0;
+          try {
+            const old = JSON.parse(cp.execFileSync('git', ['show', 'HEAD:data/catalog.json'], { encoding: 'utf8' }));
+            previousCount = (Array.isArray(old) ? old : old.mods || []).length;
+          } catch {}
+
+          const minimum = Math.max(8000, previousCount >= 8000 ? Math.floor(previousCount * 0.8) : 0);
+          if (mods.length < minimum) throw new Error(`Catalog suspiciously small: ${mods.length}; minimum ${minimum}`);
+
           const ids = new Set(mods.map(m => m.id));
           if (ids.size !== mods.length) throw new Error(`Duplicate IDs: ${mods.length - ids.size}`);
+
           const packages = mods.filter(m => m.packageUrl).length;
           const images = mods.filter(m => m.image).length;
+          const descriptions = mods.filter(m => m.description).length;
           const knownAuthors = mods.filter(m => m.author && m.author !== 'Unknown studio').length;
-          console.log(`validated ${mods.length} mods; ${packages} packages; ${images} images; ${knownAuthors} known authors`);
+          if (!packages) throw new Error('Catalog contains zero resolved package URLs');
+          if (!images) throw new Error('Catalog contains zero artwork URLs');
+          console.log(`validated ${mods.length} mods; ${packages} packages; ${images} images; ${descriptions} descriptions; ${knownAuthors} known authors; previous ${previousCount}`);
           NODE
 
       - name: Commit catalog changes
