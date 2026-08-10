@@ -60,6 +60,7 @@ export function save(bytes, name, type = 'application/octet-stream') {
   const anchor = document.createElement('a');
   anchor.href = url;
   anchor.download = name;
+  anchor.style.display = 'none';
   document.body.append(anchor);
   anchor.click();
   anchor.remove();
@@ -73,16 +74,14 @@ function packageName(mod, extension) {
 
 function directDownload(mod) {
   if (mobileLike()) {
-    // Android/iOS browsers are much more reliable when the package navigation
-    // happens synchronously inside the original tap instead of after fetch().
-    window.location.assign(mod.packageUrl);
+    // Last-resort compatibility path. The GX server may choose the filename
+    // here, which is why this is used only after the named blob path fails.
+    window.location.href = mod.packageUrl;
     return;
   }
 
   const anchor = document.createElement('a');
   anchor.href = mod.packageUrl;
-  // Best effort: some browsers/CDNs ignore download= for cross-origin URLs,
-  // but keeping it here allows the real name whenever the browser honors it.
   anchor.download = packageName(mod, 'crx');
   anchor.target = '_blank';
   anchor.rel = 'noopener noreferrer';
@@ -91,23 +90,32 @@ function directDownload(mod) {
   anchor.remove();
 }
 
+async function fetchPackage(url) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30000);
+  try {
+    return await fetch(url, {
+      mode: 'cors',
+      credentials: 'omit',
+      cache: 'no-store',
+      referrerPolicy: 'no-referrer',
+      signal: controller.signal
+    });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 export async function download(mod, asZip = false) {
   if (!mod.packageUrl) throw Error('No resolved GX package URL is available yet');
 
-  // On phones/tablets, do not burn the transient tap activation on a CORS
-  // request before starting an ordinary CRX download. This path runs before
-  // the first await, so the browser treats it as a direct user-initiated load.
-  if (!asZip && mobileLike()) {
-    directDownload(mod);
-    return 'crx';
-  }
-
+  // Always try the readable/blob path first — including on Android. This is
+  // the only browser-native way for GX Workshop to force the actual mod name.
+  // Direct GX navigation remains a reliability fallback for CRX downloads.
   let response;
   try {
-    response = await fetch(mod.packageUrl, { mode: 'cors' });
+    response = await fetchPackage(mod.packageUrl);
   } catch (error) {
-    // GX CDN CORS can vary. ZIP conversion requires readable bytes, but an
-    // original CRX should never stop working just because fetch() is blocked.
     if (asZip) throw Error('GX CDN blocked browser access to the package bytes');
     directDownload(mod);
     return 'crx';
