@@ -4,7 +4,7 @@ const ORIGIN = 'https://store.gx.me';
 const CONCURRENCY = Math.max(1, Number(process.env.ENRICH_CONCURRENCY || 10));
 const DELAY_MS = Math.max(0, Number(process.env.ENRICH_DELAY_MS || 45));
 const MAX = Math.max(0, Number(process.env.ENRICH_LIMIT || 20000));
-const UA = 'Mozilla/5.0 (compatible; GX-Workshop-Enricher/1.0; +https://github.com/Alastor-Kaneki/GX-Workshop)';
+const UA = 'Mozilla/5.0 (compatible; GX-Workshop-Enricher/1.1; +https://github.com/Alastor-Kaneki/GX-Workshop)';
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 function decode(value = '') {
@@ -78,7 +78,7 @@ async function get(url) {
 function studioName(html) {
   for (const match of html.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/gi)) {
     const a = attrs(`<a ${match[1]}>`);
-    if (!a.href || !/(?:^|\/)studios\/[^/?#]+\/?(?:$|[?#])/i.test(a.href)) continue;
+    if (!a.href || !(/(?:^|\/)studios\/[^/?#]+\/?(?:$|[?#])/i.test(a.href) || /[?&]studioId=/i.test(a.href))) continue;
     const name = strip(match[2]);
     if (name && name.length <= 120) return name;
   }
@@ -88,7 +88,9 @@ function studioName(html) {
   if (jsonStudio) return decode(jsonStudio[1]);
 
   const escapedStudio = html.match(/\\"studio\\"\s*:\s*\{[\s\S]{0,1200}?\\"name\\"\s*:\s*\\"([^"\\]+)\\"/i);
-  return escapedStudio ? decode(escapedStudio[1]) : '';
+  if (escapedStudio) return decode(escapedStudio[1]);
+  if (/\bOpera GX Official\b/i.test(strip(html))) return 'Opera GX Official';
+  return '';
 }
 
 function packageUrl(html) {
@@ -121,8 +123,10 @@ function value(text, label, pattern) {
   return chunk.match(pattern)?.[0] || '';
 }
 
+// A missing description can be legitimate. Re-request records only when a
+// field that materially affects cards/downloads is still absent.
 function needs(mod) {
-  return !mod.name || !mod.packageUrl || !mod.image || !mod.description || !mod.version || !mod.size || !mod.author || mod.author === 'Unknown studio';
+  return !mod.name || !mod.packageUrl || !mod.image || !mod.version || !mod.size || !mod.author || mod.author === 'Unknown studio';
 }
 
 async function enrich(mod) {
