@@ -15,6 +15,14 @@ function mobileLike() {
     (window.matchMedia && window.matchMedia('(pointer: coarse)').matches && window.innerWidth < 1100);
 }
 
+export function bridgeAvailable() {
+  return Boolean(document.documentElement?.dataset?.gxWorkshopBridge);
+}
+
+export function bridgeVersion() {
+  return document.documentElement?.dataset?.gxWorkshopBridge || null;
+}
+
 export function extract(buffer) {
   const bytes = new Uint8Array(buffer);
   if (isZip(bytes)) return { bytes, container: 'ZIP', version: null, offset: 0 };
@@ -74,8 +82,6 @@ function packageName(mod, extension) {
 
 function directDownload(mod) {
   if (mobileLike()) {
-    // Last-resort compatibility path. The GX server may choose the filename
-    // here, which is why this is used only after the named blob path fails.
     window.location.href = mod.packageUrl;
     return;
   }
@@ -88,6 +94,42 @@ function directDownload(mod) {
   document.body.append(anchor);
   anchor.click();
   anchor.remove();
+}
+
+function bridgeDownload(mod, asZip) {
+  return new Promise((resolve, reject) => {
+    const id = `gxw-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const timeout = setTimeout(() => {
+      cleanup();
+      reject(Error('GX Workshop download bridge timed out'));
+    }, 90000);
+
+    function cleanup() {
+      clearTimeout(timeout);
+      document.removeEventListener('gx-workshop-bridge-result', onResult);
+    }
+
+    function onResult(event) {
+      let result;
+      try { result = JSON.parse(String(event.detail || '{}')); }
+      catch { return; }
+      if (result.id !== id) return;
+      if (result.phase === 'working') return;
+      cleanup();
+      if (result.phase === 'done' && result.ok) resolve(result.kind || (asZip ? 'zip' : 'crx'));
+      else reject(Error(result.message || 'GX Workshop bridge download failed'));
+    }
+
+    document.addEventListener('gx-workshop-bridge-result', onResult);
+    document.dispatchEvent(new CustomEvent('gx-workshop-bridge-request', {
+      detail: JSON.stringify({
+        id,
+        url: mod.packageUrl,
+        name: safe(String(mod?.name || 'gx-mod').replace(/\.(crx|zip)$/i, '')),
+        format: asZip ? 'zip' : 'crx'
+      })
+    }));
+  });
 }
 
 async function fetchPackage(url) {
@@ -109,9 +151,12 @@ async function fetchPackage(url) {
 export async function download(mod, asZip = false) {
   if (!mod.packageUrl) throw Error('No resolved GX package URL is available yet');
 
-  // Always try the readable/blob path first — including on Android. This is
-  // the only browser-native way for GX Workshop to force the actual mod name.
-  // Direct GX navigation remains a reliability fallback for CRX downloads.
+  // Preferred path: behave like the original GX Mod Archive Downloader script.
+  // The companion userscript supplies GM_xmlhttpRequest + GM_download, bypassing
+  // page CORS and preserving the actual mod filename on desktop and mobile.
+  if (bridgeAvailable()) return bridgeDownload(mod, asZip);
+
+  // Browser-only fallback for people who do not install the bridge.
   let response;
   try {
     response = await fetchPackage(mod.packageUrl);
