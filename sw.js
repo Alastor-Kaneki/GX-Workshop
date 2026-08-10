@@ -1,9 +1,9 @@
-const C='gx-workshop-v9';
+const C='gx-workshop-v10';
 const CORE=[
-  './','./index.html','./app.css?v=9','./enhancements.css?v=9','./mobile.css?v=9',
-  './js/app.js?v=9','./js/archive-ui.js?v=9','./js/theme-assets.js?v=9','./js/bridge-ui.js?v=9',
+  './','./index.html','./app.css?v=10','./enhancements.css?v=10','./mobile.css?v=10',
+  './js/app.js?v=10','./js/archive-ui.js?v=10','./js/theme-assets.js?v=10','./js/bridge-ui.js?v=10',
   './js/db.js','./js/archive.js','./js/zip.js','./js/themes.js','./js/gx.js',
-  './gx-workshop-bridge.user.js','./data/catalog.json','./manifest.webmanifest','./icons/icon.svg'
+  './data/catalog.json','./manifest.webmanifest','./icons/icon.svg','./gx-workshop-bridge.user.js'
 ];
 self.addEventListener('install',event=>event.waitUntil(
   caches.open(C).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting())
