@@ -1,1 +1,25 @@
-const C='gx-workshop-v4',CORE=['./','./index.html','./app.css','./enhancements.css','./js/boot.js','./js/app.js','./js/archive-ui.js','./js/theme-assets.js','./js/db.js','./js/archive.js','./js/zip.js','./js/themes.js','./js/gx.js','./data/catalog.json','./manifest.webmanifest','./icons/icon.svg'];self.addEventListener('install',e=>e.waitUntil(caches.open(C).then(x=>x.addAll(CORE)).then(()=>self.skipWaiting())));self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))).then(()=>self.clients.claim())));self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;const u=new URL(e.request.url);if(u.origin!==location.origin)return;e.respondWith(fetch(e.request).then(r=>{const c=r.clone();caches.open(C).then(x=>x.put(e.request,c));return r}).catch(()=>caches.match(e.request)))})
+const C='gx-workshop-v7';
+const CORE=[
+  './','./index.html','./app.css?v=7','./enhancements.css?v=7',
+  './js/app.js?v=7','./js/archive-ui.js?v=7','./js/theme-assets.js?v=7',
+  './js/db.js','./js/archive.js','./js/zip.js','./js/themes.js','./js/gx.js',
+  './data/catalog.json','./manifest.webmanifest','./icons/icon.svg'
+];
+self.addEventListener('install',event=>event.waitUntil(
+  caches.open(C).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting())
+));
+self.addEventListener('activate',event=>event.waitUntil(
+  caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==C).map(key=>caches.delete(key)))).then(()=>self.clients.claim())
+));
+self.addEventListener('fetch',event=>{
+  if(event.request.method!=='GET')return;
+  const url=new URL(event.request.url);
+  if(url.origin!==location.origin)return;
+  event.respondWith(
+    fetch(event.request).then(response=>{
+      const copy=response.clone();
+      caches.open(C).then(cache=>cache.put(event.request,copy));
+      return response;
+    }).catch(()=>caches.match(event.request))
+  );
+});
