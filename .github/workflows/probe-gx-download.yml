@@ -1,10 +1,10 @@
-name: Probe GX download headers
+name: Probe GX endpoints
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - '.github/workflows/probe-gx-download.yml'
-  workflow_dispatch:
 
 permissions:
   contents: read
@@ -13,24 +13,30 @@ jobs:
   probe:
     runs-on: ubuntu-latest
     steps:
-      - name: Probe GX CDN filename behavior
+      - name: Probe GX CDN filename behavior and catalog pagination
         shell: bash
         run: |
           set -u
           BASE='https://mods.store.gx.me/mods/f5d8c4ea-a807-40cf-8136-3c9d85f0dc6a/e95f5b50-b1ba-433c-a688-2b596ab89e9d/38bb52d9-c389-43b9-a746-0a4f72bf74f5/mod.crx'
-          NAME='TriPoint%20Inversus.crx'
-          urls=(
-            "$BASE"
-            "$BASE?filename=$NAME"
-            "$BASE?download=$NAME"
-            "$BASE?dl=1&filename=$NAME"
-            "$BASE?response-content-disposition=attachment%3B%20filename%3D%22$NAME%22"
-          )
-          i=0
-          for url in "${urls[@]}"; do
-            i=$((i+1))
-            echo "===== PROBE $i ====="
-            echo "$url"
-            curl -sSIL --max-redirs 5 --connect-timeout 15 --max-time 40 "$url" | grep -Ei '^(HTTP/|content-disposition:|content-type:|content-length:|access-control-allow-origin:|location:|cache-control:)' || true
-            echo
+          DISP='attachment%3B%20filename%3D%22TriPoint%20Inversus.crx%22'
+          echo '===== DOWNLOAD HEADER OVERRIDE ====='
+          curl -sSIL --max-redirs 5 --connect-timeout 15 --max-time 40 "$BASE?response-content-disposition=$DISP" | grep -Ei '^(HTTP/|content-disposition:|content-type:|content-length:|access-control-allow-origin:)' || true
+          echo
+          echo '===== PAGINATION COUNTS ====='
+          for q in \
+            'page=1' \
+            'page=1&limit=100' \
+            'page=1&pageSize=100' \
+            'page=1&perPage=100' \
+            'page=1&page_size=100' \
+            'page=1&take=100'; do
+            html="$(curl -fsSL --connect-timeout 15 --max-time 60 "https://store.gx.me/mods/?$q")"
+            count="$(printf '%s' "$html" | grep -oE '/mods/[a-z0-9]+/[^\"?#/]+' | sort -u | wc -l)"
+            echo "$q => $count unique mod links"
           done
+          echo
+          echo '===== DETAIL AUTHOR/META SHAPES ====='
+          curl -fsSL --connect-timeout 15 --max-time 60 'https://store.gx.me/mods/f3elnv/tripoint-inversus/' \
+            | tr '\n' ' ' \
+            | grep -oE '.{0,160}(/studios/|og:image|og:description|description).{0,260}' \
+            | head -n 12 || true
