@@ -115,7 +115,7 @@ function tagTexts(html) {
 function studioName(html, text) {
   for (const match of String(html || '').matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/gi)) {
     const a = attrs(`<a ${match[1]}>`);
-    if (!a.href || !/[?&]studioId=/i.test(a.href)) continue;
+    if (!a.href || !(/(?:^|\/)studios\/[^/?#]+\/?(?:$|[?#])/i.test(a.href) || /[?&]studioId=/i.test(a.href))) continue;
     const name = strip(match[2]);
     if (name) return name;
   }
