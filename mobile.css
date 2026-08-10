@@ -1,0 +1,200 @@
+/* GX Workshop mobile shell — intentionally isolated from desktop styles. */
+@media (max-width: 900px) {
+  html, body { overflow-x: hidden; }
+  body { min-width: 0; padding: 0 0 82px; }
+  button, input, select, label { touch-action: manipulation; }
+
+  /* Keep the actual app controls visible instead of floating them off-screen. */
+  .top {
+    position: sticky !important;
+    top: 0;
+    left: auto;
+    right: auto;
+    z-index: 1000;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "brand actions"
+      "search search";
+    gap: 8px 10px;
+    align-items: center;
+    padding: 8px 10px 10px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(9, 7, 13, .96);
+    backdrop-filter: blur(18px);
+  }
+
+  .brand { grid-area: brand; min-width: 0; gap: 8px; }
+  .brand > b { width: 36px; height: 36px; border-radius: 11px; flex: 0 0 auto; }
+  .brand span { display: block; min-width: 0; font-size: 15px; line-height: 1.05; }
+  .brand small { display: block; margin-top: 3px; font-size: 7px; letter-spacing: .12em; }
+
+  .topBtns { grid-area: actions; justify-self: end; }
+  .topBtns button { width: 36px; height: 36px; }
+  .topBtns #random { display: inline-grid; }
+
+  .search {
+    grid-area: search;
+    position: relative !important;
+    inset: auto !important;
+    width: 100%;
+    height: 44px;
+    z-index: 1;
+    border-radius: 12px;
+    padding: 0 11px;
+  }
+  .search input { font-size: 16px; }
+  .search kbd { display: none; }
+
+  .side { display: none !important; }
+  main {
+    padding: 14px 10px 96px !important;
+    min-width: 0;
+    width: 100%;
+  }
+
+  /* Always-visible phone navigation. The first bottom value is a fallback for
+     browsers that do not understand env()/calc() with safe-area insets. */
+  .mobile {
+    display: grid !important;
+    position: fixed;
+    z-index: 1100;
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    height: 64px;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    overflow: hidden;
+    background: rgba(12, 9, 18, .97);
+    backdrop-filter: blur(18px);
+    box-shadow: 0 14px 42px rgba(0,0,0,.55);
+  }
+  .mobile button {
+    min-width: 0;
+    min-height: 48px;
+    padding: 5px 2px;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 2px;
+    font-size: 18px;
+  }
+  .mobile button.active { color: var(--accent); background: rgba(var(--rgb), .10); }
+  .mobile small { font-size: 8px; line-height: 1; }
+
+  /* Compact the browse page instead of spending an entire screen on the hero. */
+  .hero { grid-template-columns: 1fr !important; gap: 10px; margin-bottom: 14px; }
+  .hero > article { padding: 16px !important; border-radius: 17px; }
+  .hero h1 {
+    margin: 6px 0 10px;
+    font-size: clamp(28px, 9vw, 38px) !important;
+    line-height: 1.02;
+    letter-spacing: -.04em;
+  }
+  .hero h1 br { display: none; }
+  /* Firefox-safe fallback: never make this line transparent on phones. */
+  .hero h1 em {
+    background: none !important;
+    color: var(--accent) !important;
+    -webkit-text-fill-color: var(--accent) !important;
+  }
+  .hero p { margin: 0; font-size: 13px; line-height: 1.5; }
+  .resolver h2 { margin: 6px 0 10px; font-size: 20px; }
+  .resolver > div { display: grid !important; grid-template-columns: minmax(0, 1fr) auto; gap: 7px; }
+  .resolver input { width: 100%; font-size: 16px; padding: 10px 11px; }
+  .resolver button { min-width: 84px; min-height: 42px; padding: 0 13px; }
+  .resolver small { margin-top: 7px; font-size: 10px; line-height: 1.35; }
+
+  .bar { margin: 4px 0 15px; gap: 8px; align-items: stretch; flex-direction: column; }
+  .chips { width: 100%; gap: 6px; padding: 1px 0 3px; overflow-x: auto; overscroll-behavior-inline: contain; }
+  .chip { flex: 0 0 auto; padding: 7px 10px; font-size: 10px; }
+  .bar select { align-self: stretch !important; width: 100%; min-height: 42px; padding: 8px 11px; }
+
+  .title { margin-bottom: 9px; align-items: end; gap: 10px; }
+  .title h2 { font-size: 22px; line-height: 1.1; }
+  .title > b { flex: 0 0 auto; }
+
+  /* Phone cards become compact rows; more information, less dead space. */
+  .grid { grid-template-columns: 1fr !important; gap: 9px; }
+  .card {
+    display: grid;
+    grid-template-columns: 104px minmax(0, 1fr);
+    min-height: 126px;
+    border-radius: 15px;
+    transform: none !important;
+  }
+  .art { height: 100% !important; min-height: 126px; }
+  .cardBody { min-width: 0; padding: 10px; display: flex; flex-direction: column; }
+  .cardTitle { gap: 5px; }
+  .card h3 {
+    font-size: 14px;
+    line-height: 1.2;
+    white-space: normal;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+  .fav { font-size: 18px; }
+  .author { margin: 4px 0 7px; font-size: 9px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tags { display: flex !important; flex-wrap: nowrap; overflow: hidden; gap: 4px; }
+  .tag { flex: 0 0 auto; font-size: 7px; padding: 3px 5px; }
+  .meta { display: flex !important; margin-top: 7px; font-size: 8px; }
+  .actions { margin-top: auto; padding-top: 8px; gap: 5px; }
+  .actions button { min-height: 34px; padding: 6px 5px; font-size: 9px; }
+
+  .head { display: block; margin-bottom: 16px; }
+  .head h1 { margin: 5px 0 6px; font-size: 32px !important; line-height: 1; }
+  .head p { margin: 0 0 12px; font-size: 13px; line-height: 1.5; }
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .stats article { padding: 13px; }
+  .stats b { font-size: 24px; }
+  .drop { min-height: 230px; padding: 20px 14px; }
+  .drop > b { font-size: 42px; }
+
+  .themeLayout, .settings { grid-template-columns: 1fr !important; gap: 10px; }
+  .editor { position: static !important; }
+  .themesGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .themeCard { min-height: 110px; padding: 11px; }
+  .themeCard b { font-size: 14px; }
+
+  dialog {
+    width: calc(100vw - 18px);
+    max-height: 90vh;
+    max-height: 90dvh;
+    border-radius: 18px;
+  }
+  .detailArt { height: 150px; }
+  .detail { padding: 16px; }
+  .detail h2 { font-size: 25px; }
+  .detailBtns > * { flex: 1 1 130px; text-align: center; }
+  #close { right: 8px; top: 8px; }
+
+  #toasts {
+    left: 10px;
+    right: 10px;
+    bottom: 82px;
+    bottom: calc(82px + env(safe-area-inset-bottom, 0px));
+  }
+  .toast { max-width: none; width: 100%; }
+}
+
+@media (max-width: 430px) {
+  .top { padding-inline: 8px; }
+  main { padding-inline: 8px !important; }
+  .brand small { display: none; }
+  .hero > article { padding: 14px !important; }
+  .hero h1 { font-size: 29px !important; }
+  .card { grid-template-columns: 92px minmax(0, 1fr); min-height: 118px; }
+  .art { min-height: 118px; }
+  .themesGrid { grid-template-columns: 1fr; }
+}
