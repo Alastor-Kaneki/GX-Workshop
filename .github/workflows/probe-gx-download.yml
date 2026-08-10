@@ -1,0 +1,36 @@
+name: Probe GX download headers
+
+on:
+  push:
+    paths:
+      - '.github/workflows/probe-gx-download.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe GX CDN filename behavior
+        shell: bash
+        run: |
+          set -u
+          BASE='https://mods.store.gx.me/mods/f5d8c4ea-a807-40cf-8136-3c9d85f0dc6a/e95f5b50-b1ba-433c-a688-2b596ab89e9d/38bb52d9-c389-43b9-a746-0a4f72bf74f5/mod.crx'
+          NAME='TriPoint%20Inversus.crx'
+          urls=(
+            "$BASE"
+            "$BASE?filename=$NAME"
+            "$BASE?download=$NAME"
+            "$BASE?dl=1&filename=$NAME"
+            "$BASE?response-content-disposition=attachment%3B%20filename%3D%22$NAME%22"
+          )
+          i=0
+          for url in "${urls[@]}"; do
+            i=$((i+1))
+            echo "===== PROBE $i ====="
+            echo "$url"
+            curl -sSIL --max-redirs 5 --connect-timeout 15 --max-time 40 "$url" | grep -Ei '^(HTTP/|content-disposition:|content-type:|content-length:|access-control-allow-origin:|location:|cache-control:)' || true
+            echo
+          done
