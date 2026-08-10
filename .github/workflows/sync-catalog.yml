@@ -1,4 +1,5 @@
 name: Sync GX catalog
+# Pipeline v2.1: full Desktop + Mobile discovery, metadata repair, validation.
 
 on:
   workflow_dispatch:
