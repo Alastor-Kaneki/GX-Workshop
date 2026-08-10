@@ -13,6 +13,7 @@ permissions:
 jobs:
   sync:
     runs-on: ubuntu-latest
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -20,8 +21,12 @@ jobs:
           node-version: '22'
       - run: node scripts/sync-catalog.mjs
         env:
-          MAX_PAGES: '20'
-          DETAIL_LIMIT: '400'
+          MAX_PAGES: '500'
+          DETAIL_LIMIT: '20000'
+          REFRESH_LIMIT: '1200'
+          RECENT_PAGES: '12'
+          CONCURRENCY: '8'
+          DETAIL_DELAY_MS: '35'
       - name: Commit catalog changes
         run: |
           if git diff --quiet -- data/catalog.json; then exit 0; fi
