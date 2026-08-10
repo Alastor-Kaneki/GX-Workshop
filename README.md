@@ -10,9 +10,9 @@
 - **GX package resolver** — inherited from the earlier GX Mod Archive Downloader logic. It recognizes both `mods.store.gx.me` and legacy `play.gxc.gg` layouts and derives the sibling `mod.crx` from GX asset URLs.
 - **Downloads** — direct original CRX downloads and CRX2/CRX3 → raw ZIP payload extraction in-browser when the GX CDN permits CORS. If ZIP conversion is blocked, the UI falls back to the original CRX.
 - **Local library** — favorites, saved/downloaded mods, download history and archive imports stored in IndexedDB.
-- **Workbench** — drag/drop `.crx` or `.zip`, SHA-256 fingerprinting, CRX version detection, ZIP payload offset detection and raw ZIP extraction.
+- **Workbench / Archive Explorer** — drag/drop `.crx` or `.zip`, SHA-256 fingerprinting, CRX2/CRX3 detection, ZIP payload extraction, central-directory file browsing, manifest viewing, per-file extraction and JSON reports. Normal ZIP32 archives are supported; ZIP64 is deliberately rejected for now.
 - **GX Theme Lab** — whole-interface theme families, accent/secondary/background controls, glow/radius mutation, theme randomization, image palette extraction and CSS-variable-driven coverage.
-- **Asset-driven theming architecture** — an imported GX image is treated as a *theme seed*, not just an icon replacement. The next pack milestone is automatic CRX/ZIP asset-pack enumeration so each GX icon creates a complete style preset.
+- **GX asset-pack → theme generator** — import individual images, ZIPs or CRXs. GX Workshop discovers image assets (including one nested archive level), extracts palettes locally, and turns each asset into a deterministic whole-interface theme with a distinct visual personality such as neon, circuit, glass, sharp, void or soft. Up to 120 themes are generated per archive import to keep giant packs controllable.
 - **PWA** — installable manifest, service-worker app-shell caching and standalone layout support.
 - **Settings + diagnostics** — source status, feature capability report, visual effects, reduced motion, backup/restore and local reset.
 - **Chaos Mode** — because of course.
@@ -61,13 +61,11 @@ The sync intentionally rate-limits requests and retries temporary failures inste
 
 The architecture is deliberately split into modules so “moar” does not become “broken.” Planned systems fit around the same core:
 
-- archive file-tree explorer
 - manifest editor, validator and diff viewer
 - image/audio/font/video previews
 - component extraction/replacement
 - custom mod builder and mixer
 - loadouts and collections
-- asset-pack → multi-theme generator
 - custom theme package format
 - local search indexes and smart collections
 - compatibility/conflict analysis
