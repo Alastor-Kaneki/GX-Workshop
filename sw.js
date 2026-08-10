@@ -1,7 +1,7 @@
-const C='gx-workshop-v7';
+const C='gx-workshop-v8';
 const CORE=[
-  './','./index.html','./app.css?v=7','./enhancements.css?v=7',
-  './js/app.js?v=7','./js/archive-ui.js?v=7','./js/theme-assets.js?v=7',
+  './','./index.html','./app.css?v=8','./enhancements.css?v=8','./mobile.css?v=8',
+  './js/app.js?v=8','./js/archive-ui.js?v=8','./js/theme-assets.js?v=8',
   './js/db.js','./js/archive.js','./js/zip.js','./js/themes.js','./js/gx.js',
   './data/catalog.json','./manifest.webmanifest','./icons/icon.svg'
 ];
