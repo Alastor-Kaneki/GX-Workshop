@@ -3,6 +3,11 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '17 */6 * * *'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/sync-catalog.mjs'
+      - '.github/workflows/sync-catalog.yml'
 permissions:
   contents: write
 jobs:
