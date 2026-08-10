@@ -255,18 +255,19 @@ function addFound(mod, platform) {
 
 async function scanCatalog(platform) {
   let emptyOrDuplicatePages = 0;
+  const platformSeen = new Set();
   for (let page = 1; page <= MAX_PAGES; page++) {
     const url = `${ORIGIN}/mods/?page=${page}&sort=total-downloads-desc&tagAlias=${encodeURIComponent(platform.toLowerCase())}`;
     const html = await get(url);
     const items = discoverLinks(html);
-    let added = 0;
+    let pageAdded = 0;
     for (const item of items) {
-      const existed = found.has(item.id);
+      if (!platformSeen.has(item.id)) pageAdded++;
+      platformSeen.add(item.id);
       addFound(item, platform);
-      if (!existed) added++;
     }
-    if (page === 1 || page % 25 === 0) console.log(`scan ${platform} page ${page}: ${items.length} links, ${found.size} unique total`);
-    if (!items.length || !added) emptyOrDuplicatePages++;
+    if (page === 1 || page % 25 === 0) console.log(`scan ${platform} page ${page}: ${items.length} links, ${platformSeen.size} ${platform} IDs, ${found.size} union`);
+    if (!items.length || !pageAdded) emptyOrDuplicatePages++;
     else emptyOrDuplicatePages = 0;
     if (emptyOrDuplicatePages >= 2) break;
     await sleep(70);
