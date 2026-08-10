@@ -10,7 +10,7 @@ function isZip(bytes, offset = 0) {
   return [[80, 75, 3, 4], [80, 75, 5, 6], [80, 75, 7, 8]].some(signature => hasPrefix(bytes, signature, offset));
 }
 
-function mobileLike() {
+export function mobileLike() {
   return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '') ||
     (window.matchMedia && window.matchMedia('(pointer: coarse)').matches && window.innerWidth < 1100);
 }
@@ -80,14 +80,24 @@ function packageName(mod, extension) {
   return `${base}.${extension}`;
 }
 
+// GX's package CDN accepts the S3-style response-content-disposition override.
+// This is crucial for cross-origin direct downloads: the server, rather than the
+// HTML download= attribute, tells Android/Firefox/Chrome the real filename.
+export function namedPackageUrl(mod, extension = 'crx') {
+  const url = new URL(mod.packageUrl);
+  url.searchParams.set('response-content-disposition', `attachment; filename="${packageName(mod, extension).replace(/"/g, '')}"`);
+  return url.href;
+}
+
 function directDownload(mod) {
+  const href = namedPackageUrl(mod, 'crx');
   if (mobileLike()) {
-    window.location.href = mod.packageUrl;
+    window.location.href = href;
     return;
   }
 
   const anchor = document.createElement('a');
-  anchor.href = mod.packageUrl;
+  anchor.href = href;
   anchor.download = packageName(mod, 'crx');
   anchor.target = '_blank';
   anchor.rel = 'noopener noreferrer';
@@ -151,12 +161,16 @@ async function fetchPackage(url) {
 export async function download(mod, asZip = false) {
   if (!mod.packageUrl) throw Error('No resolved GX package URL is available yet');
 
-  // Preferred path: behave like the original GX Mod Archive Downloader script.
-  // The companion userscript supplies GM_xmlhttpRequest + GM_download, bypassing
-  // page CORS and preserving the actual mod filename on desktop and mobile.
   if (bridgeAvailable()) return bridgeDownload(mod, asZip);
 
-  // Browser-only fallback for people who do not install the bridge.
+  // A normal CRX does not require readable response bytes. On mobile, start the
+  // direct server-named download synchronously so transient tap activation is
+  // preserved and GX supplies the real filename through Content-Disposition.
+  if (!asZip && mobileLike()) {
+    directDownload(mod);
+    return 'crx';
+  }
+
   let response;
   try {
     response = await fetchPackage(mod.packageUrl);
