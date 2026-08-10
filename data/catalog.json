@@ -1,0 +1,151 @@
+{
+  "meta": {
+    "generatedAt": "2026-08-10T00:00:00Z",
+    "sources": [
+      "GX Store seed catalog"
+    ],
+    "note": "Automated sync expands this from official GX Store pages."
+  },
+  "mods": [
+    {
+      "id": "ao1nxy",
+      "slug": "spaced-out",
+      "name": "Spaced Out",
+      "author": "Opera GX Official",
+      "description": "Opera GX to the moon. Space ambience, sound effects and a complete GX experience.",
+      "url": "https://store.gx.me/mods/ao1nxy/spaced-out/",
+      "packageUrl": null,
+      "image": "",
+      "components": [
+        "App icon",
+        "Background Music",
+        "Browser Sounds",
+        "Fonts",
+        "Icons",
+        "Keyboard sounds",
+        "Mobile Icons",
+        "Web Modding",
+        "Shader",
+        "Splash screen",
+        "Stickers",
+        "Theme",
+        "Wallpaper"
+      ],
+      "tags": [
+        "Official",
+        "Sci-Fi",
+        "Relaxing"
+      ],
+      "version": "5.4",
+      "installs": 796631,
+      "size": "23.8MB",
+      "updatedAt": "2026-06-22"
+    },
+    {
+      "id": "ykl7w7",
+      "slug": "the-minecraft-experience",
+      "name": "The Minecraft Experience",
+      "author": "Qsta981 studio",
+      "description": "A Minecraft-focused GX mod with music, sounds, themes and wallpapers.",
+      "url": "https://store.gx.me/mods/ykl7w7/the-minecraft-experience/",
+      "packageUrl": null,
+      "image": "",
+      "components": [
+        "Background Music",
+        "Browser Sounds",
+        "Keyboard sounds",
+        "Web Modding",
+        "Shader",
+        "Theme",
+        "Wallpaper"
+      ],
+      "tags": [
+        "Game Inspired",
+        "Lo-Fi",
+        "Fanmade Creator Mods"
+      ],
+      "version": "1.0",
+      "installs": 72289,
+      "size": "480.2MB",
+      "updatedAt": "2023-12-23"
+    },
+    {
+      "id": "55pqct",
+      "slug": "vee-chance",
+      "name": "Vee Chance",
+      "author": "Opera GX Official",
+      "description": "Official Forsaken × Opera GX collaboration mod.",
+      "url": "https://store.gx.me/mods/55pqct/vee-chance/",
+      "packageUrl": null,
+      "image": "",
+      "components": [
+        "Background Music",
+        "Browser Sounds",
+        "Keyboard sounds",
+        "SD effects",
+        "Theme",
+        "Wallpaper"
+      ],
+      "tags": [
+        "Official"
+      ],
+      "version": "1.3",
+      "installs": 75924,
+      "size": "6.94MB",
+      "updatedAt": "2026-05-20"
+    },
+    {
+      "id": "05ljxa",
+      "slug": "the-ghostface",
+      "name": "The Ghostface",
+      "author": "Puluz studio",
+      "description": "Ghostface-inspired music, sounds, wallpapers and an old-TV filter.",
+      "url": "https://store.gx.me/mods/05ljxa/the-ghostface/",
+      "packageUrl": null,
+      "image": "",
+      "components": [
+        "Background Music",
+        "Browser Sounds",
+        "Keyboard sounds",
+        "Web Modding",
+        "Shader",
+        "Theme",
+        "Wallpaper"
+      ],
+      "tags": [
+        "Scary",
+        "Shows & Movies"
+      ],
+      "version": "2.0.3",
+      "installs": 6955,
+      "size": "8.48MB",
+      "updatedAt": "2024-09-22"
+    },
+    {
+      "id": "5c6xbb",
+      "slug": "darling-in-the-franxx-zero-two-002",
+      "name": "Darling in the Franxx: Zero Two 002",
+      "author": "Alton09's Studio",
+      "description": "Anime-inspired live wallpaper, background music and web modding.",
+      "url": "https://store.gx.me/mods/5c6xbb/darling-in-the-franxx-zero-two-002/",
+      "packageUrl": null,
+      "image": "",
+      "components": [
+        "Background Music",
+        "Web Modding",
+        "Theme",
+        "Wallpaper"
+      ],
+      "tags": [
+        "Anime",
+        "Animated",
+        "YouTube",
+        "Spotify"
+      ],
+      "version": "1.9.1",
+      "installs": 8796,
+      "size": "97.8MB",
+      "updatedAt": "2026-01-28"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "name": "GX Workshop",
+  "short_name": "GX Workshop",
+  "description": "Browse, archive, inspect and manage Opera GX mods.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#09070d",
+  "theme_color": "#b21cff",
+  "icons": [
+    {
+      "src": "./icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
