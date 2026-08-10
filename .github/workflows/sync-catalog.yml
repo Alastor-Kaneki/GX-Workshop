@@ -8,6 +8,9 @@ on:
     paths:
       - 'scripts/sync-catalog.mjs'
       - '.github/workflows/sync-catalog.yml'
+concurrency:
+  group: gx-catalog-sync
+  cancel-in-progress: true
 permissions:
   contents: write
 jobs:
@@ -34,4 +37,5 @@ jobs:
           git config user.email "actions@users.noreply.github.com"
           git add data/catalog.json
           git commit -m "sync GX catalog"
+          git pull --rebase origin main
           git push
