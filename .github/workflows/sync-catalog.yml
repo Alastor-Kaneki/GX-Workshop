@@ -1,4 +1,5 @@
 name: Sync GX catalog
+
 on:
   workflow_dispatch:
   schedule:
@@ -7,22 +8,28 @@ on:
     branches: [main]
     paths:
       - 'scripts/sync-catalog.mjs'
+      - 'scripts/enrich-catalog.mjs'
       - '.github/workflows/sync-catalog.yml'
+
 concurrency:
   group: gx-catalog-sync
   cancel-in-progress: true
+
 permissions:
   contents: write
+
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node scripts/sync-catalog.mjs
+
+      - name: Discover and refresh full GX catalog
+        run: node scripts/sync-catalog.mjs
         env:
           MAX_PAGES: '500'
           DETAIL_LIMIT: '20000'
@@ -30,6 +37,30 @@ jobs:
           RECENT_PAGES: '12'
           CONCURRENCY: '8'
           DETAIL_DELAY_MS: '35'
+
+      - name: Repair incomplete card metadata
+        run: node scripts/enrich-catalog.mjs
+        env:
+          ENRICH_LIMIT: '20000'
+          ENRICH_CONCURRENCY: '10'
+          ENRICH_DELAY_MS: '45'
+
+      - name: Validate generated catalog
+        shell: bash
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const data = JSON.parse(fs.readFileSync('data/catalog.json', 'utf8'));
+          const mods = Array.isArray(data) ? data : data.mods || [];
+          if (mods.length < 1000) throw new Error(`Catalog suspiciously small: ${mods.length}`);
+          const ids = new Set(mods.map(m => m.id));
+          if (ids.size !== mods.length) throw new Error(`Duplicate IDs: ${mods.length - ids.size}`);
+          const packages = mods.filter(m => m.packageUrl).length;
+          const images = mods.filter(m => m.image).length;
+          const knownAuthors = mods.filter(m => m.author && m.author !== 'Unknown studio').length;
+          console.log(`validated ${mods.length} mods; ${packages} packages; ${images} images; ${knownAuthors} known authors`);
+          NODE
+
       - name: Commit catalog changes
         run: |
           if git diff --quiet -- data/catalog.json; then exit 0; fi
