@@ -1,0 +1,36 @@
+name: Patch current GX studio parser
+
+on:
+  push:
+    paths:
+      - '.github/workflows/patch-studio-parser.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch studio link detection
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('scripts/sync-catalog.mjs')
+          s = p.read_text()
+          old = "if (!a.href || !/[?&]studioId=/i.test(a.href)) continue;"
+          new = "if (!a.href || !(/(?:^|\\/)studios\\/[^/?#]+\\/?(?:$|[?#])/i.test(a.href) || /[?&]studioId=/i.test(a.href))) continue;"
+          if old not in s:
+              raise SystemExit('Expected old studio parser pattern was not found')
+          p.write_text(s.replace(old, new, 1))
+          PY
+      - name: Commit parser fix
+        run: |
+          git config user.name "gx-workshop-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add scripts/sync-catalog.mjs
+          git commit -m "fix GX studio metadata parser"
+          git pull --rebase origin main
+          git push
