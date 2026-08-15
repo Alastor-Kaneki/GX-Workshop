@@ -258,7 +258,16 @@ async function scanCatalog(platform) {
   const platformSeen = new Set();
   for (let page = 1; page <= MAX_PAGES; page++) {
     const url = `${ORIGIN}/mods/?page=${page}&sort=total-downloads-desc&tagAlias=${encodeURIComponent(platform.toLowerCase())}`;
-    const html = await get(url);
+    let html;
+    try {
+      html = await get(url);
+    } catch (error) {
+      if (String(error.message).startsWith('404 ')) {
+        console.log(`scan ${platform} page ${page}: reached end of catalog`);
+        break;
+      }
+      throw error;
+    }
     const items = discoverLinks(html);
     let pageAdded = 0;
     for (const item of items) {
