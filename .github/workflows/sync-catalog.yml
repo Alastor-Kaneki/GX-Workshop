@@ -1,5 +1,5 @@
 name: Sync GX catalog
-# Pipeline v2.2: full Desktop + Mobile discovery, metadata repair, guarded validation.
+# Pipeline v2.3: memory-safe full discovery with incremental metadata enrichment.
 
 on:
   workflow_dispatch:
@@ -23,6 +23,11 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     timeout-minutes: 180
+    env:
+      # The GX pages are large enough that Node's default ~4 GB V8 heap can be
+      # exhausted during the initial catalog bootstrap. Keep headroom without
+      # consuming the runner's entire memory allocation.
+      NODE_OPTIONS: '--max-old-space-size=6144'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -33,17 +38,22 @@ jobs:
         run: node scripts/sync-catalog.mjs
         env:
           MAX_PAGES: '500'
-          DETAIL_LIMIT: '20000'
+          # Full discovery still records every mod, but detail enrichment is
+          # deliberately chunked so a bootstrap does not retain 11k+ fetched
+          # pages in one Node process.
+          DETAIL_LIMIT: '7000'
           REFRESH_LIMIT: '1200'
           RECENT_PAGES: '12'
-          CONCURRENCY: '8'
+          CONCURRENCY: '6'
           DETAIL_DELAY_MS: '35'
 
       - name: Repair incomplete card metadata
         run: node scripts/enrich-catalog.mjs
         env:
-          ENRICH_LIMIT: '20000'
-          ENRICH_CONCURRENCY: '10'
+          # This is a fresh Node process, so use it for another bounded chunk.
+          # Subsequent scheduled runs continue filling any remaining gaps.
+          ENRICH_LIMIT: '3000'
+          ENRICH_CONCURRENCY: '6'
           ENRICH_DELAY_MS: '45'
 
       - name: Validate generated catalog
